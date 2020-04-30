@@ -4,6 +4,7 @@ const Scene = require('telegraf/scenes/base')
 const WizardScene = require('telegraf/scenes/wizard')
 
 const defaultInit = () => Promise.resolve()
+const defaultCatch = (err) => console.error('μ-bot: Unhandled error', err) 
 const defaultCb = (req, res) => {
   res.statusCode = 404
   res.end()
@@ -22,7 +23,8 @@ function start ({ token, domain, hookPath, botModule, port, host, silent }) {
     : null
   const bot = new Telegraf(token, botModule.options)
   const init = botModule.init || botModule.initialize || defaultInit
-  bot.catch((err) => console.error('μ-bot: Unhandled error', err))
+  const catchFn = botModule.catch || defaultCatch
+  bot.catch((err) => catchFn(err))
   bot.use(botModule.bot || botModule.botHandler || botModule)
   return init(bot)
     .then(() => bot.launch({ webhook }))
